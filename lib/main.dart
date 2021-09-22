@@ -1,5 +1,7 @@
 import 'package:async_redux/async_redux.dart';
+import 'package:async_redux_todo/client/Theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider_for_redux/provider_for_redux.dart';
 
 import 'business/app_state.dart';
@@ -17,30 +19,46 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-static final mainNavigation = MainNavigation();
+  static final mainNavigation = MainNavigation();
 
   @override
   Widget build(BuildContext context) {
     return AsyncReduxProvider<AppState>.value(
         value: store,
         child: MaterialApp(
-        title: 'Flutter redux_async Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        //home: CounterWidget(),
-        debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey,
-        initialRoute: mainNavigation.initialRoute(context, true),
-        routes: mainNavigation.routs,
-        onGenerateRoute: (RouteSettings settings) {
-          return MaterialPageRoute<void>(builder: (context) {
-            return const Scaffold(
-              body: Center(child: Text('Произошла ошибка навигации')),
-            );
-          });
-        },
-      ));
+          title: 'Flutter redux_async Demo',
+          theme: ThemeData(
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.mainDarkBlue,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: AppColors.mainDarkBlue,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.grey,
+            ),
+          ),
+          //home: CounterWidget(),
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          initialRoute: mainNavigation.initialRoute(context, true),
+          routes: mainNavigation.routs,
+          onGenerateRoute: (RouteSettings settings) {
+            return MaterialPageRoute<void>(builder: (context) {
+              return const Scaffold(
+                body: Center(child: Text('Произошла ошибка навигации')),
+              );
+            });
+          },
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ru', 'RU'), // Russian, country code
+            Locale('en', 'EN'), // English, no country code
+          ],
+        ));
   }
 }
 

@@ -46,7 +46,7 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
         return Scaffold(
               appBar: AppBar(
                 title: const Text(
-                  'redux_async todo',
+                  'Personal planner/tracker',
                 ),
                 actions: [
                   IconButton(
@@ -73,19 +73,19 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
                     icon: Icon(
                       Icons.home,
                     ),
-                    label: 'Новости',
+                    label: 'Todo-s',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(
                       Icons.tv,
                     ),
-                    label: 'Сериалы',
+                    label: 'Notes',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(
                       Icons.today,
                     ),
-                    label: 'todo',
+                    label: 'Meters',
                   ),
                 ],
               ),
