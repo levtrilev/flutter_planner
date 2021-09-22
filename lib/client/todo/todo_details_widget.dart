@@ -95,7 +95,8 @@ class TodoDetailsWidget extends StatelessWidget {
                   FloatingActionButton(
                     backgroundColor: Colors.red,
                     tooltip: 'удалить',
-                    onPressed: () {}, // => deleteTodoItem(),
+                    onPressed: () => dispatch(
+                        DeleteTodoDetailsAction(todoIdToDelete: state.todoState.todoItem.id)),
                     heroTag: null,
                     child: const Icon(Icons.delete),
                   ),

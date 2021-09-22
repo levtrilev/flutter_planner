@@ -4,6 +4,54 @@ import 'package:async_redux_todo/dao/api/api_client.dart';
 import 'package:async_redux_todo/dao/entity/todo_item.dart';
 import 'package:async_redux_todo/main_navigation.dart';
 
+class CreateNewAndOpenTodoDetailsAction extends ReduxAction<AppState> {
+  @override
+  AppState? reduce() {
+    TodoItem todoItem = TodoItem(
+      id: 0,
+      title: '',
+      userId: 1,
+      isCompleted: false,
+      openDate: DateTime.now(),
+      closeDate: DateTime.now(),
+    );
+
+    return state.copy(todoState: state.todoState.copy(todoItem: todoItem));
+  }
+
+  @override
+  void after() =>
+      dispatch(NavigateAction.pushNamed(MainNavigationRouteNames.todoDetails));
+}
+
+class DeleteTodoDetailsAction extends ReduxAction<AppState> {
+  final int todoIdToDelete;
+  DeleteTodoDetailsAction({
+    required this.todoIdToDelete,
+  });
+
+  @override
+  Future<AppState?> reduce() async {
+    bool isDeleted = await _apiClient.todoItemDelete(todoIdToDelete) ?? false;
+
+    if (!isDeleted) return null;
+
+    // List<TodoItem> todoItems = await getTodoItems();
+    List<TodoItem> todoItems = state.todoState.todoItems;
+    final deletedElementIndex = todoItems.indexOf(
+        todoItems.firstWhere((todoItem) => todoItem.id == todoIdToDelete));
+    todoItems.removeAt(deletedElementIndex);
+
+    final newstate =
+        state.copy(todoState: state.todoState.copy(todoItems: todoItems));
+    return newstate;
+  }
+
+  @override
+  void after() =>
+      dispatch(NavigateAction.pushNamed(MainNavigationRouteNames.mainScreen));
+}
+
 class SaveTodoDetailsAction extends ReduxAction<AppState> {
   TodoItem changedTodoItem;
   SaveTodoDetailsAction({
@@ -12,16 +60,25 @@ class SaveTodoDetailsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState?> reduce() async {
-    int changedTodoItemId =
-        await _apiClient.updateTodoItem(todoItemToUpdate: changedTodoItem);
+    List<TodoItem> todoItems = state.todoState.todoItems;
+    int changedTodoItemId = 0;
+    if (changedTodoItem.id == 0) {
+      changedTodoItemId =
+          await _apiClient.createTodoItem(todoItemToCreate: changedTodoItem);
+    } else {
+      changedTodoItemId =
+          await _apiClient.updateTodoItem(todoItemToUpdate: changedTodoItem);
+    }
 
     if (changedTodoItemId == 0) return null;
 
-    // List<TodoItem> todoItems = await getTodoItems();
-    List<TodoItem> todoItems = state.todoState.todoItems;
-    final changedElementIndex = todoItems.indexOf(
-        todoItems.firstWhere((todoItem) => todoItem.id == changedTodoItemId));
-    todoItems[changedElementIndex] = changedTodoItem;
+    if (changedTodoItem.id == 0) {
+      todoItems.add(changedTodoItem.copy(id: changedTodoItemId));
+    } else {
+      final changedElementIndex = todoItems.indexOf(
+          todoItems.firstWhere((todoItem) => todoItem.id == changedTodoItemId));
+      todoItems[changedElementIndex] = changedTodoItem;
+    }
 
     final newstate =
         state.copy(todoState: state.todoState.copy(todoItems: todoItems));

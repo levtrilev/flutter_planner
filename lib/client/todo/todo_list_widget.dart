@@ -15,7 +15,8 @@ class TodoListWidget extends StatelessWidget {
           ListView.builder(
             padding: const EdgeInsets.only(top: 70),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            itemCount: state.todoState.todoItems.length, //model.todoItems.length,
+            itemCount:
+                state.todoState.todoItems.length, //model.todoItems.length,
             itemExtent: 110,
             itemBuilder: (BuildContext context, int index) {
               final todoItem = state.todoState.todoItems[index];
@@ -95,9 +96,10 @@ class TodoListWidget extends StatelessWidget {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () => dispatch(OpenTodoDetailsAction(todoId: todoItem.id)),
-                          ),
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => dispatch(
+                            OpenTodoDetailsAction(todoId: todoItem.id)),
+                      ),
                     ),
                   ],
                 ),
@@ -122,14 +124,14 @@ class TodoListWidget extends StatelessWidget {
             child: Row(
               children: [
                 OutlinedButton(
-                    child: const Text('refresh'),
-                    onPressed: () => dispatch(GetTodoListAction()),
-                    ),
-                OutlinedButton(child: const Text('new'), onPressed: () {}
-                    // => model.onTodoItemTap(
-                    // context,
-                    // -1), // -1 - create new todo
-                    ),
+                  child: const Text('refresh'),
+                  onPressed: () => dispatch(GetTodoListAction()),
+                ),
+                OutlinedButton(
+                  child: const Text('new'),
+                  onPressed: () =>
+                      dispatch(CreateNewAndOpenTodoDetailsAction()),
+                ),
               ],
             ),
           )
