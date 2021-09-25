@@ -26,8 +26,8 @@ class ApiClientException implements Exception {
 class ApiClient {
   final _client = HttpClient();
   static const _host = 'http://api.themoviedb.org/3';
-  static const _hostMin = 'http://192.168.1.71:80';
-  //static const _hostMin = 'http://95.165.6.202:80';
+  // static const _hostMin = 'http://192.168.1.71:80';
+  static const _hostMin = 'http://95.165.6.202:80';
   // static const _hostMinLan = 'http://192.168.1.71:80';
   // static const _hostMinWan = 'http://192.168.1.71:80';
   // static const _hostMinLocalhost = 'http://10.0.2.2:5000';

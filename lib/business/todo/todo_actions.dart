@@ -47,6 +47,10 @@ class DeleteTodoDetailsAction extends ReduxAction<AppState> {
     return newstate;
   }
 
+  // @override
+  // void before() =>
+  //     dispatch(NavigateAction.pushNamed(MainNavigationRouteNames.deleteTodoDialog));
+
   @override
   void after() =>
       dispatch(NavigateAction.pushNamed(MainNavigationRouteNames.mainScreen));

@@ -95,8 +95,12 @@ class TodoDetailsWidget extends StatelessWidget {
                   FloatingActionButton(
                     backgroundColor: Colors.red,
                     tooltip: 'удалить',
-                    onPressed: () => dispatch(
-                        DeleteTodoDetailsAction(todoIdToDelete: state.todoState.todoItem.id)),
+                    onPressed: () => showAlert(
+                        context, state.todoState.todoItem.id, (int id) {
+                      dispatch(DeleteTodoDetailsAction(todoIdToDelete: id));
+                    }),
+                    // onPressed: () => dispatch(
+                    //     DeleteTodoDetailsAction(todoIdToDelete: state.todoState.todoItem.id)),
                     heroTag: null,
                     child: const Icon(Icons.delete),
                   ),
@@ -278,4 +282,39 @@ class _IsCompletedSwitchWidgetState extends State<IsCompletedSwitchWidget> {
       },
     );
   }
+}
+
+showAlert(BuildContext context, int todoItemId, Function yesAction) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Задача будет удалена!'),
+        content: const Text("Удалить?"),
+        actions: <Widget>[
+          OutlinedButton(
+            child: const Text("YES"),
+            onPressed: () {
+              yesAction(todoItemId);
+              Navigator.of(context).pop();
+            },
+          ),
+          OutlinedButton(
+            child: const Text("NO"),
+            onPressed: () {
+              //Put your code here which you want to execute on No button click.
+              Navigator.of(context).pop();
+            },
+          ),
+          OutlinedButton(
+            child: const Text("CANCEL"),
+            onPressed: () {
+              //Put your code here which you want to execute on Cancel button click.
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }

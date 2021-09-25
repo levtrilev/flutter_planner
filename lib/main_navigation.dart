@@ -12,7 +12,6 @@ abstract class MainNavigationRouteNames {
   static const passDataToChild = '/pass_data_to_child';
   static const inheritedNotifierExample = '/inherited_notifier_example';
   static const todoDetails = '/todo_details';
-  static const todoDetailsR = '/todo_detailsR';
   static const counter = '/counter';
 }
 
