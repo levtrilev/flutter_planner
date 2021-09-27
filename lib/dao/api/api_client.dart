@@ -52,6 +52,20 @@ class ApiClient {
     // //final urlMin = Uri.parse('http://10.0.2.2:5000/todoitems');
   }
 
+  Future<List<TodoItem>>? searchTodoItemsGet(String query) async {
+    // ignore: prefer_function_declarations_over_variables
+    final parser = (dynamic json) {
+      final responce = (json as List<dynamic>)
+          .map((e) => TodoItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return responce;
+    };
+    //await _checkAddress();
+    final result = await _get(_hostMin, '/todoitems/title/$query', parser);
+
+    return result;
+  }
+
   Future<List<TodoItem>>? todoItemsGet() async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {

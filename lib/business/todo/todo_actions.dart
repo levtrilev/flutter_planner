@@ -1,8 +1,48 @@
+import 'dart:async';
+
 import 'package:async_redux/async_redux.dart';
+
 import 'package:async_redux_todo/business/app_state.dart';
 import 'package:async_redux_todo/dao/api/api_client.dart';
 import 'package:async_redux_todo/dao/entity/todo_item.dart';
 import 'package:async_redux_todo/main_navigation.dart';
+
+final _apiClient = ApiClient();
+var _isLoadingInProgress = false;
+var _stateIsInitializingNow = true;
+var _searchQuery = '';
+Timer? searchDebounce;
+List<TodoItem>? searchResultTodoItems;
+
+class SearchTodoListAction extends ReduxAction<AppState> {
+  final String searchQuery;
+  SearchTodoListAction({
+    required this.searchQuery,
+  });
+  @override
+  Future<AppState?> reduce() async {
+
+    if (searchQuery == '') {
+      List<TodoItem> todoItems = await getTodoItems();
+      return state.copy(todoState: state.todoState.copy(todoItems: todoItems));
+    }
+    // ignore: avoid_print
+    print(searchQuery);
+    await searchTodoItems(searchQuery);
+    return state.copy(todoState: state.todoState.copy(todoItems: searchResultTodoItems));
+  }
+}
+
+// class SetNewTodoListAction extends ReduxAction<AppState> {
+//   final List<TodoItem>? items;
+
+//   SetNewTodoListAction({required this.items});
+
+//   @override
+//   AppState? reduce() {
+//     return state.copy(todoState: state.todoState.copy(todoItems: items));
+//   }
+// }
 
 class CreateNewAndOpenTodoDetailsAction extends ReduxAction<AppState> {
   @override
@@ -172,16 +212,35 @@ class InitialGetTodoListAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState?> reduce() async {
-    if (state.todoState.todoItems.isEmpty) {
+    if (state.todoState.todoItems.isEmpty && _stateIsInitializingNow) {
       List<TodoItem> todoItems = await getTodoItems();
+      _stateIsInitializingNow = false;
       return state.copy(todoState: state.todoState.copy(todoItems: todoItems));
     }
     return null;
   }
 }
 
-final _apiClient = ApiClient();
-var _isLoadingInProgress = false;
+Future<List<TodoItem>?> searchTodoItems(String query) async {
+  final searchQuery = query.isNotEmpty ? query : null;
+  if (searchQuery == null) return null;
+  if (_searchQuery == searchQuery) return null;
+  _searchQuery = searchQuery;
+
+  // searchDebounce?.cancel();
+  // searchDebounce = Timer(const Duration(seconds: 2), () async {
+    if (_isLoadingInProgress) return null;
+    _isLoadingInProgress = true;
+
+    try {
+      searchResultTodoItems = await _apiClient.searchTodoItemsGet(searchQuery);
+    } catch (e) {
+      _isLoadingInProgress = false;
+    } finally {
+      _isLoadingInProgress = false;
+    }
+  //});
+}
 
 Future<List<TodoItem>> getTodoItems() async {
   if (_isLoadingInProgress) return <TodoItem>[];
@@ -190,8 +249,6 @@ Future<List<TodoItem>> getTodoItems() async {
   try {
     final todos = await _apiClient.todoItemsGet();
     if (todos == null) return <TodoItem>[];
-    // todoList.clear();
-    // todoList.addAll(todos);
     _isLoadingInProgress = false;
     return todos;
   } catch (e) {

@@ -9,10 +9,15 @@ class TodoListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const posterPath = 'https://i.imgur.com/OvMZBs9.jpg';
+    TextEditingController _searchController = TextEditingController(text: '');
     return ReduxConsumer<AppState>(
       builder: (context, store, state, dispatch, child) => Stack(
         children: [
           ListView.builder(
+            controller: ScrollController(
+              initialScrollOffset: 5,
+              keepScrollOffset: false,
+            ),
             padding: const EdgeInsets.only(top: 70),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             itemCount:
@@ -109,8 +114,9 @@ class TodoListWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextField(
-              //controller: _searchController,
-              //onChanged: model.searchTodoItems(query),
+              controller: _searchController,
+              onChanged: (String query) => dispatch(
+                  SearchTodoListAction(searchQuery: _searchController.text)),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white.withAlpha(235),
