@@ -9,6 +9,7 @@ part of 'todo_item.dart';
 TodoItem _$TodoItemFromJson(Map<String, dynamic> json) {
   return TodoItem(
     id: json['id'] as int,
+    priority: json['priority'] as int,
     title: json['title'] as String,
     isCompleted: json['isCompleted'] as bool,
     userId: json['userId'] as int,
@@ -19,6 +20,7 @@ TodoItem _$TodoItemFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$TodoItemToJson(TodoItem instance) => <String, dynamic>{
       'id': instance.id,
+      'priority': instance.priority,
       'title': instance.title,
       'isCompleted': instance.isCompleted,
       'userId': instance.userId,

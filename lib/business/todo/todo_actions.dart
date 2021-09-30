@@ -49,6 +49,7 @@ class CreateNewAndOpenTodoDetailsAction extends ReduxAction<AppState> {
   AppState? reduce() {
     TodoItem todoItem = TodoItem(
       id: 0,
+      priority: 50,
       title: '',
       userId: 1,
       isCompleted: false,
@@ -262,6 +263,7 @@ Future<TodoItem> getTodoDetails(int todoId) async {
   //   // todoId == 0 means to create a new todo
   final newTodo = TodoItem(
     id: 0,
+    priority: 0,
     title: 'Не найдено todo id = $todoId',
     isCompleted: false,
     userId: 1,

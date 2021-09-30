@@ -26,6 +26,7 @@ class TodoState {
   static TodoState initialState() => TodoState(
         todoItem: TodoItem(
             id: 0,
+            priority: 0,
             title: 'title',
             isCompleted: false,
             userId: 1,

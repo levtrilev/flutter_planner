@@ -8,6 +8,7 @@ part 'todo_item.g.dart';
 @JsonSerializable()
 class TodoItem {
   final int id;
+  final int priority;
   final String title;
   final bool isCompleted;
   final int userId;
@@ -16,6 +17,7 @@ class TodoItem {
 
   TodoItem({
     required this.id,
+    required this.priority,
     required this.title,
     required this.isCompleted,
     required this.userId,
@@ -25,6 +27,7 @@ class TodoItem {
 
   TodoItem copy({
     int? id,
+    int? priority,
     String? title,
     bool? isCompleted,
     int? userId,
@@ -33,6 +36,7 @@ class TodoItem {
   }) {
     return TodoItem(
       id: id ?? this.id,
+      priority: priority ?? this.priority,
       title: title ?? this.title,
       isCompleted: isCompleted ?? this.isCompleted,
       userId: userId ?? this.userId,

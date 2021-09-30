@@ -65,15 +65,28 @@ class TodoListWidget extends StatelessWidget {
                                 ),
                                 Text(
                                   todoItem.title,
-                                  maxLines: 1,
+                                  maxLines: 2,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
-                                  'Выполнено: ${todoItem.isCompleted ? todoItem.isCompleted.toString() : 'Не выполнено!'}',
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Приоритет: ' +
+                                          todoItem.priority
+                                              .toString(), // movie.description,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                                                    Text(
+                                  todoItem.isCompleted ? ' Выполнено.' : ' Не выполнено!',
                                   maxLines: 1,
                                   style: TextStyle(
                                     color: todoItem.isCompleted
@@ -81,13 +94,17 @@ class TodoListWidget extends StatelessWidget {
                                         : Colors.red,
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                Text(
-                                  todoItem.id.toString(), // movie.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                    const SizedBox(
+                                      width: 3,
+                                    ),
+                                    Text(
+                                      'id:' +
+                                          todoItem.id
+                                              .toString(), // movie.description,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

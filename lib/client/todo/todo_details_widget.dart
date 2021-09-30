@@ -14,7 +14,10 @@ class TodoDetailsWidget extends StatelessWidget {
     AppState? state = StoreProvider.state<AppState>(context);
     TextEditingController titleController =
         TextEditingController.fromValue(null);
+    TextEditingController priorityController =
+        TextEditingController.fromValue(null);
     titleController.text = state!.todoState.todoItem.title;
+    priorityController.text = state.todoState.todoItem.priority.toString();
 
     return ReduxConsumer<AppState>(
         builder: (context, store, state, dispatch, child) => Scaffold(
@@ -58,6 +61,20 @@ class TodoDetailsWidget extends StatelessWidget {
                       onSwitched: (newValue) => dispatch(
                           IsCompletedSwitchedAction(
                               isCompletedNewvalue: newValue)),
+                    ),
+                  ),
+                  LayoutId(
+                    id: 'priorityLabel',
+                    child: const Text('Приоритет: '),
+                  ),
+                  LayoutId(
+                    id: 'priority',
+                    child: TextFormField(
+                      controller: priorityController,
+                      keyboardType: TextInputType.number,
+                      maxLines: 1,
+                      decoration:
+                          const InputDecoration(border: InputBorder.none),
                     ),
                   ),
                   LayoutId(
@@ -113,6 +130,7 @@ class TodoDetailsWidget extends StatelessWidget {
                     onPressed: () => dispatch(SaveTodoDetailsAction(
                         changedTodoItem: state.todoState.todoItem.copy(
                       title: titleController.text,
+                      priority: int.tryParse(priorityController.text),
                     ))),
                     heroTag: null,
                     child: const Icon(Icons.save),
@@ -225,6 +243,14 @@ class FormLayoutDelegate extends MultiChildLayoutDelegate {
     if (hasChild('isCompleted')) {
       leadingSize = layoutChild('isCompleted', BoxConstraints.loose(size));
       positionChild('isCompleted', const Offset(167, 0));
+    }
+    if (hasChild('priorityLabel')) {
+      leadingSize = layoutChild('priorityLabel', BoxConstraints.loose(size));
+      positionChild('priorityLabel', const Offset(225, 16));
+    }
+    if (hasChild('priority')) {
+      leadingSize = layoutChild('priority', BoxConstraints.loose(size));
+      positionChild('priority', const Offset(307, 0));
     }
     if (hasChild('userId')) {
       leadingSize = layoutChild('userId', BoxConstraints.loose(size));

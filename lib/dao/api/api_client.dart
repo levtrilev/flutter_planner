@@ -45,7 +45,7 @@ class ApiClient {
       final responce = jsonMapList.map((e) => TodoItem.fromJson(e)).toList();
       return responce;
     };
-    final result = await _get(_hostMin, '/todoitems', parser);
+    final result = await _get(_hostMin, '/api/todoitems', parser);
     return result;
     // // _client.connectionTimeout = Duration.zero;
     // final url = Uri.parse('$_host/authentication/token/new?api_key=$_apiKey');
@@ -61,7 +61,7 @@ class ApiClient {
       return responce;
     };
     //await _checkAddress();
-    final result = await _get(_hostMin, '/todoitems/title/$query', parser);
+    final result = await _get(_hostMin, '/api/todoitems/title/$query', parser);
 
     return result;
   }
@@ -75,7 +75,7 @@ class ApiClient {
       return responce;
     };
     //await _checkAddress();
-    final result = await _get(_hostMin, '/todoitems', parser);
+    final result = await _get(_hostMin, '/api/todoitems', parser);
 
     return result;
   }
@@ -87,12 +87,12 @@ class ApiClient {
       return responce;
     };
 
-    final result = _get(_hostMin, '/todoitems/${id.toString()}', parser);
+    final result = _get(_hostMin, '/api/todoitems/${id.toString()}', parser);
     return result;
   }
 
   Future<bool>? todoItemDelete(int id) async {
-    return await _delete(_hostMin, '/todoitems/${id.toString()}');
+    return await _delete(_hostMin, '/api/todoitems/${id.toString()}');
   }
 
   Future<String> auth({
@@ -171,7 +171,8 @@ class ApiClient {
       final url = _makeUri(host, path, urlParameters);
       final request = await _client.putUrl(url);
       request.headers.contentType = ContentType.json;
-      request.write(jsonEncode(bodyParameters));
+      var tmpVarJson = jsonEncode(bodyParameters);
+      request.write(tmpVarJson);
       final responce = await request.close();
       if (responce.statusCode == 204) return true;
       return false;
@@ -257,7 +258,7 @@ class ApiClient {
     };
     final result = _post(
       _hostMin,
-      '/todoitems',
+      '/api/todoitems',
       bodyParameters,
       parser,
     );
@@ -268,15 +269,16 @@ class ApiClient {
     required TodoItem todoItemToUpdate,
   }) async {
     final bodyParameters = <String, dynamic>{
-      'id': 0, //todoItemToUpdate.id,
+      'id': todoItemToUpdate.id,
       'title': todoItemToUpdate.title,
       'isCompleted': todoItemToUpdate.isCompleted,
       'openDate': todoItemToUpdate.openDate.toIso8601String(),
       'closeDate': todoItemToUpdate.closeDate.toIso8601String(),
+      'priority': todoItemToUpdate.priority,
     };
     final success = await _put(
       _hostMin,
-      '/todoitems/${todoItemToUpdate.id.toString()}',
+      '/api/todoitems/${todoItemToUpdate.id.toString()}',
       bodyParameters,
     );
     return success ? todoItemToUpdate.id : 0;
