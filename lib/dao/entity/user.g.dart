@@ -9,17 +9,21 @@ part of 'user.dart';
 User _$UserFromJson(Map<String, dynamic> json) {
   return User(
     id: json['id'] as int,
-    name: json['name'] as String,
+    firstName: json['firstName'] as String,
+    lastName: json['lastName'] as String,
+    patronymic: json['patronymic'] as String,
+    username: json['username'] as String,
+    email: json['email'] as String,
     role: json['role'] as String,
-    active: json['active'] as bool,
-    registerDate: DateTime.parse(json['registerDate'] as String),
   );
 }
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'id': instance.id,
-      'name': instance.name,
+      'firstName': instance.firstName,
+      'lastName': instance.lastName,
+      'patronymic': instance.patronymic,
+      'username': instance.username,
+      'email': instance.email,
       'role': instance.role,
-      'active': instance.active,
-      'registerDate': instance.registerDate.toIso8601String(),
     };

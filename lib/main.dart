@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
           //home: CounterWidget(),
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          initialRoute: mainNavigation.initialRoute(context, true),
+          initialRoute: mainNavigation.initialRoute(context, false),
           routes: mainNavigation.routs,
           onGenerateRoute: (RouteSettings settings) {
             return MaterialPageRoute<void>(builder: (context) {

@@ -1,6 +1,5 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:async_redux_todo/business/app_state.dart';
-import 'package:async_redux_todo/business/todo/todo_actions.dart';
 import 'package:async_redux_todo/client/todo/todo_list_widget.dart';
 import 'package:async_redux_todo/main_navigation.dart';
 import 'package:flutter/material.dart';
@@ -42,54 +41,56 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
   Widget build(BuildContext context) {
     return ReduxConsumer<AppState>(
         builder: (context, store, state, dispatch, child) {
-          dispatch(InitialGetTodoListAction());
-        return Scaffold(
-              appBar: AppBar(
-                title: const Text(
-                  'Personal planner/tracker',
-                ),
-                actions: [
-                  IconButton(
-                    onPressed: () => dispatch(
-                        NavigateAction<AppState>.pushNamed(
-                            MainNavigationRouteNames.counter)),
-                    icon: const Icon(Icons.search),
-                  )
-                ],
+      if (state.appStatus.userToken == '') {
+        NavigateAction.pushNamed(MainNavigationRouteNames.auth);
+      }
+      //dispatch(InitialGetTodoListAction());
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Personal planner/tracker',
+          ),
+          actions: [
+            IconButton(
+              onPressed: () => dispatch(NavigateAction<AppState>.pushNamed(
+                  MainNavigationRouteNames.auth)), //counter
+              icon: const Icon(Icons.search),
+            )
+          ],
+        ),
+        body: IndexedStack(
+          index: _selectedTab,
+          children: const [
+            TodoListWidget(),
+            Text('const Center(child: PaintTestWidget())'),
+            Text('const TodoListWidgetR()'),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedTab,
+          onTap: onSelectTab,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.home,
               ),
-              body: IndexedStack(
-                index: _selectedTab,
-                children: const [
-                  TodoListWidget(),
-                  Text('const Center(child: PaintTestWidget())'),
-                  Text('const TodoListWidgetR()'),
-                ],
+              label: 'Todo-s',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.tv,
               ),
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: _selectedTab,
-                onTap: onSelectTab,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(
-                      Icons.home,
-                    ),
-                    label: 'Todo-s',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(
-                      Icons.tv,
-                    ),
-                    label: 'Notes',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(
-                      Icons.today,
-                    ),
-                    label: 'Meters',
-                  ),
-                ],
+              label: 'Notes',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.today,
               ),
-            );}
-            );
+              label: 'Meters',
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

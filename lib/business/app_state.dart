@@ -1,16 +1,19 @@
 import 'package:async_redux_todo/business/todo/todo_state.dart';
+import 'package:async_redux_todo/dao/entity/app_status.dart';
 
 class AppState {
   final int counter;
   final int otherCounter;
   final String message;
   final TodoState todoState;
+  final AppStatus appStatus;
 
   AppState({
     required this.counter,
     required this.otherCounter,
     required this.message,
     required this.todoState,
+    required this.appStatus,
   });
 
   AppState copy({
@@ -18,12 +21,14 @@ class AppState {
     int? otherCounter,
     String? message,
     TodoState? todoState,
+    AppStatus? appStatus,
   }) {
     return AppState(
       counter: counter ?? this.counter,
       otherCounter: otherCounter ?? this.otherCounter,
       message: message ?? this.message,
       todoState: todoState ?? this.todoState,
+      appStatus: appStatus ?? this.appStatus,
     );
   }
 
@@ -32,6 +37,7 @@ class AppState {
         otherCounter: 3,
         message: 'other is bigger!',
         todoState: TodoState.initialState(),
+        appStatus: AppStatus.initialState(),
       );
 
   @override
@@ -42,9 +48,14 @@ class AppState {
           counter == other.counter &&
           otherCounter == other.otherCounter &&
           message == other.message &&
+          appStatus == other.appStatus &&
           todoState == other.todoState;
 
   @override
   int get hashCode =>
-      counter.hashCode ^ otherCounter.hashCode ^ message.hashCode ^ todoState.hashCode;
+      counter.hashCode ^
+      otherCounter.hashCode ^
+      message.hashCode ^
+      appStatus.hashCode ^
+      todoState.hashCode;
 }

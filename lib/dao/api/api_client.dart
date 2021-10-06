@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:async_redux_todo/dao/entity/todo_item.dart';
+import 'package:async_redux_todo/dao/entity/user.dart';
 
 /*
 // Возможные ошибки при соединении:
@@ -25,34 +25,58 @@ class ApiClientException implements Exception {
 
 class ApiClient {
   final _client = HttpClient();
-  static const _host = 'http://api.themoviedb.org/3';
+  //static const _host = 'http://api.themoviedb.org/3';
   // static const _hostMin = 'http://192.168.1.71:80';
   static const _hostMin = 'http://95.165.6.202:80';
   // static const _hostMinLan = 'http://192.168.1.71:80';
   // static const _hostMinWan = 'http://192.168.1.71:80';
   // static const _hostMinLocalhost = 'http://10.0.2.2:5000';
   static const _imageUrl = 'http://tmdb.org/t/p/w500';
-  static const _apiKey = '0a2a46b5593a0978cc8e87ba34037430';
+  //static const _apiKey = '0a2a46b5593a0978cc8e87ba34037430';
 
   static imageUrl(String path) {
     return _imageUrl + path;
   }
 
-  Future<List<TodoItem>?> minimalApiGet() async {
+  Future<List<TodoItem>?> minimalApiGet(String token) async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {
       final jsonMapList = json.map((e) => e as Map<String, dynamic>);
       final responce = jsonMapList.map((e) => TodoItem.fromJson(e)).toList();
       return responce;
     };
-    final result = await _get(_hostMin, '/api/todoitems', parser);
+    final result = await _get(
+      _hostMin,
+      '/api/todoitems',
+      token,
+      parser,
+    );
     return result;
     // // _client.connectionTimeout = Duration.zero;
     // final url = Uri.parse('$_host/authentication/token/new?api_key=$_apiKey');
     // //final urlMin = Uri.parse('http://10.0.2.2:5000/todoitems');
   }
 
-  Future<List<TodoItem>>? searchTodoItemsGet(String query) async {
+
+  Future<List<User>>? getUserByEmail(String email, String token) async {
+    // ignore: prefer_function_declarations_over_variables
+    final parser = (dynamic json) {
+      final responce = (json as List<dynamic>)
+          .map((e) => User.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return responce;
+    };
+    final result = await _get(
+      _hostMin,
+      '/api/users/$email',
+      token,
+      parser,
+    );
+
+    return result;
+  }
+
+  Future<List<TodoItem>>? searchTodoItemsGet(String query, String token, int userId) async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {
       final responce = (json as List<dynamic>)
@@ -61,12 +85,17 @@ class ApiClient {
       return responce;
     };
     //await _checkAddress();
-    final result = await _get(_hostMin, '/api/todoitems/title/$query', parser);
+    final result = await _get(
+      _hostMin,
+      '/api/todoitems/title/$query/user/$userId',
+      token,
+      parser,
+    );
 
     return result;
   }
 
-  Future<List<TodoItem>>? todoItemsGet() async {
+  Future<List<TodoItem>>? todoItemsGet(String token, int userId) async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {
       final responce = (json as List<dynamic>)
@@ -75,19 +104,29 @@ class ApiClient {
       return responce;
     };
     //await _checkAddress();
-    final result = await _get(_hostMin, '/api/todoitems', parser);
+    final result = await _get(
+      _hostMin,
+      '/api/todoitems/user/$userId',
+      token,
+      parser,
+    );
 
     return result;
   }
 
-  Future<TodoItem>? todoItemGet(int id) async {
+  Future<TodoItem>? todoItemGet(int id, String token) async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {
       final responce = TodoItem.fromJson(json as Map<String, dynamic>);
       return responce;
     };
 
-    final result = _get(_hostMin, '/api/todoitems/${id.toString()}', parser);
+    final result = _get(
+      _hostMin,
+      '/api/todoitems/${id.toString()}',
+      token,
+      parser,
+    );
     return result;
   }
 
@@ -95,19 +134,19 @@ class ApiClient {
     return await _delete(_hostMin, '/api/todoitems/${id.toString()}');
   }
 
-  Future<String> auth({
-    required String username,
-    required String password,
-  }) async {
-    final token = await _makeToken();
-    final validToken = await _validateUser(
-      username: username,
-      password: password,
-      requestToken: token,
-    );
-    final sessionId = await _makeSession(requestToken: validToken);
-    return sessionId;
-  }
+  // Future<String> auth({
+  //   required String username,
+  //   required String password,
+  // }) async {
+  //   final token = await _makeToken();
+  //   final validToken = await _validateUser(
+  //     username: username,
+  //     password: password,
+  //     requestToken: token,
+  //   );
+  //   final sessionId = await _makeSession(requestToken: validToken);
+  //   return sessionId;
+  // }
 
   Future<bool> _delete<bool>(
     String host,
@@ -135,22 +174,27 @@ class ApiClient {
     }
   }
 
+//Accept
   Future<T> _get<T>(
     String host,
     String path,
+    String token,
+    // Map<String, dynamic>? bodyParameters,
     T Function(dynamic json) parser, [
     Map<String, dynamic>? parameters,
   ]) async {
     final url = _makeUri(host, path, parameters);
     try {
       final request = await _client.getUrl(url);
+      //request.headers.contentType = ContentType.json; //'application/json'
+      request.headers.add('Accept', 'application/json');
+      request.headers.add('Authorization', 'Bearer ' + token);
+      //request.write(jsonEncode(bodyParameters));
       final responce = await request.close();
       final dynamic json = (await responce.jsonDecode());
       _validateResponce(responce, json);
       final result = parser(json);
       return result;
-      // final token = json['request_token'] as String;
-      // return token;
     } on SocketException {
       throw ApiClientException(ApiClientExceptionType.network);
     } on ApiClientException {
@@ -197,19 +241,22 @@ class ApiClient {
       // final parameters = <String, dynamic>{
       //   'username': username,
       //   'password': password,
-      //   'request_token': requestToken
       // };
       final url = _makeUri(host, path, urlParameters);
       // final url = Uri.parse(
       //     '$_host/authentication/token/validate_with_login?api_key=$_apiKey');
 
       final request = await _client.postUrl(url);
-      request.headers.contentType = ContentType.json;
+      request.headers.contentType = ContentType.json; //'application/json'
+      //request.headers.set('content-type', 'application/json');
       request.write(jsonEncode(bodyParameters));
-      final responce = await request.close();
-      final dynamic json = (await responce.jsonDecode());
+      final response = await request.close();
+      // see https://stackoverflow.com/questions/50278258/http-post-with-json-on-body-flutter-dart/50295533
 
-      _validateResponce(responce, json);
+      //String json = await response.transform(utf8.decoder).join();
+      final dynamic json = (await response.jsonDecode());
+
+      _validateResponce(response, json);
       final result = parser(json);
       return result;
       // final token = json['request_token'] as String;
@@ -224,24 +271,61 @@ class ApiClient {
     }
   }
 
-  Future<String> _makeToken() async {
+
+
+  Future<Map<String, String>> makeUserToken(String username, String password) async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
-      final token = jsonMap['request_token'] as String;
-      return token;
+      var parsedValue = jsonMap['access_token'];
+      if (parsedValue == null) return '';
+      final token = parsedValue as String;
+      parsedValue = jsonMap['username'];
+      if (parsedValue == null) return '';
+      final email = parsedValue as String;
+      return {
+        'token': token,
+        'email': email,
+      };
     };
 
-    final result = _get(_host, '/authentication/token/new', parser,
-        <String, dynamic>{'api_key': _apiKey});
-    return result;
-    // // _client.connectionTimeout = Duration.zero;
-    // final url = Uri.parse('$_host/authentication/token/new?api_key=$_apiKey');
-    // //final urlMin = Uri.parse('http://10.0.2.2:5000/todoitems');
+    final result = await _post(
+      _hostMin,
+      '/token',
+      <String, dynamic>{
+        // 'grant_type': 'password',
+        // 'username': username,
+        // 'password': password,
+      },
+      parser,
+      <String, dynamic>{
+        'grant_type': 'password',
+        'username': username,
+        'password': password,
+      },
+    );
+    return result as Map<String, String>;
   }
+
+  // Future<String> _makeToken() async {
+  //   // ignore: prefer_function_declarations_over_variables
+  //   final parser = (dynamic json) {
+  //     final jsonMap = json as Map<String, dynamic>;
+  //     final token = jsonMap['request_token'] as String;
+  //     return token;
+  //   };
+
+  //   final result = _get(_host, '/authentication/token/new', parser,
+  //       <String, dynamic>{'api_key': _apiKey});
+  //   return result;
+  //   // // _client.connectionTimeout = Duration.zero;
+  //   // final url = Uri.parse('$_host/authentication/token/new?api_key=$_apiKey');
+  //   // //final urlMin = Uri.parse('http://10.0.2.2:5000/todoitems');
+  // }
 
   Future<int> createTodoItem({
     required TodoItem todoItemToCreate,
+    required String token,
   }) async {
     // ignore: prefer_function_declarations_over_variables
     final parser = (dynamic json) {
@@ -251,10 +335,13 @@ class ApiClient {
     };
     final bodyParameters = <String, dynamic>{
       'id': 0,
+      'userId': todoItemToCreate.userId,
+      'priority': todoItemToCreate.priority,
       'title': todoItemToCreate.title,
       'isCompleted': todoItemToCreate.isCompleted,
       'openDate': todoItemToCreate.openDate.toIso8601String(),
       'closeDate': todoItemToCreate.closeDate.toIso8601String(),
+      //'Authorization': 'Bearer ' + token,
     };
     final result = _post(
       _hostMin,
@@ -267,14 +354,16 @@ class ApiClient {
 
   Future<int> updateTodoItem({
     required TodoItem todoItemToUpdate,
+    required String token,
   }) async {
     final bodyParameters = <String, dynamic>{
       'id': todoItemToUpdate.id,
+      'userId': todoItemToUpdate.userId,
+      'priority': todoItemToUpdate.priority,
       'title': todoItemToUpdate.title,
       'isCompleted': todoItemToUpdate.isCompleted,
       'openDate': todoItemToUpdate.openDate.toIso8601String(),
       'closeDate': todoItemToUpdate.closeDate.toIso8601String(),
-      'priority': todoItemToUpdate.priority,
     };
     final success = await _put(
       _hostMin,
@@ -284,51 +373,51 @@ class ApiClient {
     return success ? todoItemToUpdate.id : 0;
   }
 
-  Future<String> _validateUser({
-    required String username,
-    required String password,
-    required String requestToken,
-  }) async {
-    // ignore: prefer_function_declarations_over_variables
-    final parser = (dynamic json) {
-      final jsonMap = json as Map<String, dynamic>;
-      final token = jsonMap['request_token'] as String;
-      return token;
-    };
-    final bodyParameters = <String, dynamic>{
-      'username': username,
-      'password': password,
-      'request_token': requestToken
-    };
-    final result = _post(
-      _host,
-      '/authentication/token/validate_with_login',
-      bodyParameters,
-      parser,
-      <String, dynamic>{'api_key': _apiKey},
-    );
-    return result;
-  }
+  // Future<String> _validateUser({
+  //   required String username,
+  //   required String password,
+  //   required String requestToken,
+  // }) async {
+  //   // ignore: prefer_function_declarations_over_variables
+  //   final parser = (dynamic json) {
+  //     final jsonMap = json as Map<String, dynamic>;
+  //     final token = jsonMap['request_token'] as String;
+  //     return token;
+  //   };
+  //   final bodyParameters = <String, dynamic>{
+  //     'username': username,
+  //     'password': password,
+  //     'request_token': requestToken
+  //   };
+  //   final result = _post(
+  //     _host,
+  //     '/authentication/token/validate_with_login',
+  //     bodyParameters,
+  //     parser,
+  //     <String, dynamic>{'api_key': _apiKey},
+  //   );
+  //   return result;
+  // }
 
-  Future<String> _makeSession({
-    required String requestToken,
-  }) async {
-    // ignore: prefer_function_declarations_over_variables
-    final parser = (dynamic json) {
-      final jsonMap = json as Map<String, dynamic>;
-      final sessionId = jsonMap['session_id'] as String;
-      return sessionId;
-    };
-    final bodyParameters = <String, dynamic>{'request_token': requestToken};
-    final result = _post(
-      _host,
-      '/authentication/session/new',
-      bodyParameters,
-      parser,
-      <String, dynamic>{'api_key': _apiKey},
-    );
-    return result;
-  }
+  // Future<String> _makeSession({
+  //   required String requestToken,
+  // }) async {
+  //   // ignore: prefer_function_declarations_over_variables
+  //   final parser = (dynamic json) {
+  //     final jsonMap = json as Map<String, dynamic>;
+  //     final sessionId = jsonMap['session_id'] as String;
+  //     return sessionId;
+  //   };
+  //   final bodyParameters = <String, dynamic>{'request_token': requestToken};
+  //   final result = _post(
+  //     _host,
+  //     '/authentication/session/new',
+  //     bodyParameters,
+  //     parser,
+  //     <String, dynamic>{'api_key': _apiKey},
+  //   );
+  //   return result;
+  // }
 
   Uri _makeUri(String host, String path, [Map<String, dynamic>? parameters]) {
     // _client.connectionTimeout = Duration.zero;

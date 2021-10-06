@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:async_redux/async_redux.dart';
 
 import 'package:async_redux_todo/business/app_state.dart';
+//import 'package:async_redux_todo/business/auth/auth_actions.dart';
 import 'package:async_redux_todo/dao/api/api_client.dart';
 import 'package:async_redux_todo/dao/entity/todo_item.dart';
 import 'package:async_redux_todo/main_navigation.dart';
 
 final _apiClient = ApiClient();
 var _isLoadingInProgress = false;
-var _stateIsInitializingNow = true;
+//var _stateIsInitializingNow = true;
 var _searchQuery = '';
 Timer? searchDebounce;
 List<TodoItem>? searchResultTodoItems;
@@ -21,15 +22,19 @@ class SearchTodoListAction extends ReduxAction<AppState> {
   });
   @override
   Future<AppState?> reduce() async {
-
     if (searchQuery == '') {
-      List<TodoItem> todoItems = await getTodoItems();
+      List<TodoItem> todoItems = await getTodoItems(state.appStatus.userToken, state.appStatus.userId,);
       return state.copy(todoState: state.todoState.copy(todoItems: todoItems));
     }
     // ignore: avoid_print
     print(searchQuery);
-    await searchTodoItems(searchQuery);
-    return state.copy(todoState: state.todoState.copy(todoItems: searchResultTodoItems));
+    await searchTodoItems(
+      searchQuery,
+      state.appStatus.userToken,
+      state.appStatus.userId,
+    );
+    return state.copy(
+        todoState: state.todoState.copy(todoItems: searchResultTodoItems));
   }
 }
 
@@ -108,11 +113,16 @@ class SaveTodoDetailsAction extends ReduxAction<AppState> {
     List<TodoItem> todoItems = state.todoState.todoItems;
     int changedTodoItemId = 0;
     if (changedTodoItem.id == 0) {
-      changedTodoItemId =
-          await _apiClient.createTodoItem(todoItemToCreate: changedTodoItem);
+      //changedTodoItem.userId = state.appStatus.userId;
+      changedTodoItemId = await _apiClient.createTodoItem(
+        todoItemToCreate: changedTodoItem,
+        token: state.appStatus.userToken,
+      );
     } else {
-      changedTodoItemId =
-          await _apiClient.updateTodoItem(todoItemToUpdate: changedTodoItem);
+      changedTodoItemId = await _apiClient.updateTodoItem(
+        todoItemToUpdate: changedTodoItem,
+        token: state.appStatus.userToken,
+      );
     }
 
     if (changedTodoItemId == 0) return null;
@@ -187,7 +197,7 @@ class OpenTodoDetailsAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState?> reduce() async {
-    TodoItem todoItem = await getTodoDetails(todoId);
+    TodoItem todoItem = await getTodoDetails(todoId, state.appStatus.userToken);
     //state.todoState.copy(todoItems: todoItems);
     return state.copy(todoState: state.todoState.copy(todoItem: todoItem));
   }
@@ -202,7 +212,10 @@ class GetTodoListAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState?> reduce() async {
-    List<TodoItem> todoItems = await getTodoItems();
+    List<TodoItem> todoItems = await getTodoItems(
+      state.appStatus.userToken,
+      state.appStatus.userId,
+    );
     //state.todoState.copy(todoItems: todoItems);
     return state.copy(todoState: state.todoState.copy(todoItems: todoItems));
   }
@@ -213,16 +226,37 @@ class InitialGetTodoListAction extends ReduxAction<AppState> {
 
   @override
   Future<AppState?> reduce() async {
-    if (state.todoState.todoItems.isEmpty && _stateIsInitializingNow) {
-      List<TodoItem> todoItems = await getTodoItems();
-      _stateIsInitializingNow = false;
+    // if (state.todoState.todoItems.isEmpty && _stateIsInitializingNow) {
+    if (state.todoState.todoItems.isEmpty &&
+        state.appStatus.appStateIsInitializing) {
+      List<TodoItem> todoItems = await getTodoItems(
+        state.appStatus.userToken,
+        state.appStatus.userId,
+      );
+      //_stateIsInitializingNow = false;
       return state.copy(todoState: state.todoState.copy(todoItems: todoItems));
     }
     return null;
   }
+
+  @override
+  void after() => dispatch(SetAppStateIsInitializingAction());
 }
 
-Future<List<TodoItem>?> searchTodoItems(String query) async {
+class SetAppStateIsInitializingAction extends ReduxAction<AppState> {
+  @override
+  AppState? reduce() {
+    return state.copy(
+        appStatus: state.appStatus.copy(appStateIsInitializing: false));
+  }
+
+  @override
+  void after() =>
+      dispatch(NavigateAction.pushNamed(MainNavigationRouteNames.mainScreen));
+}
+
+Future<List<TodoItem>?> searchTodoItems(
+    String query, String token, int userId) async {
   final searchQuery = query.isNotEmpty ? query : null;
   if (searchQuery == null) return null;
   if (_searchQuery == searchQuery) return null;
@@ -230,25 +264,29 @@ Future<List<TodoItem>?> searchTodoItems(String query) async {
 
   // searchDebounce?.cancel();
   // searchDebounce = Timer(const Duration(seconds: 2), () async {
-    if (_isLoadingInProgress) return null;
-    _isLoadingInProgress = true;
+  if (_isLoadingInProgress) return null;
+  _isLoadingInProgress = true;
 
-    try {
-      searchResultTodoItems = await _apiClient.searchTodoItemsGet(searchQuery);
-    } catch (e) {
-      _isLoadingInProgress = false;
-    } finally {
-      _isLoadingInProgress = false;
-    }
+  try {
+    searchResultTodoItems = await _apiClient.searchTodoItemsGet(
+      searchQuery,
+      token,
+      userId,
+    );
+  } catch (e) {
+    _isLoadingInProgress = false;
+  } finally {
+    _isLoadingInProgress = false;
+  }
   //});
 }
 
-Future<List<TodoItem>> getTodoItems() async {
+Future<List<TodoItem>> getTodoItems(String token, int userId) async {
   if (_isLoadingInProgress) return <TodoItem>[];
   _isLoadingInProgress = true;
 
   try {
-    final todos = await _apiClient.todoItemsGet();
+    final todos = await _apiClient.todoItemsGet(token, userId);
     if (todos == null) return <TodoItem>[];
     _isLoadingInProgress = false;
     return todos;
@@ -258,7 +296,7 @@ Future<List<TodoItem>> getTodoItems() async {
   }
 }
 
-Future<TodoItem> getTodoDetails(int todoId) async {
+Future<TodoItem> getTodoDetails(int todoId, String token) async {
   // if (todoId == 0) {
   //   // todoId == 0 means to create a new todo
   final newTodo = TodoItem(
@@ -277,7 +315,7 @@ Future<TodoItem> getTodoDetails(int todoId) async {
   // _isLoadingInProgress = true;
 
   try {
-    final todo = await _apiClient.todoItemGet(todoId);
+    final todo = await _apiClient.todoItemGet(todoId, token);
     _isLoadingInProgress = false;
     if (todo == null) {
       return newTodo;

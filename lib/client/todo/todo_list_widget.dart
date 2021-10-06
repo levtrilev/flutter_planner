@@ -1,5 +1,6 @@
 import 'package:async_redux_todo/business/app_state.dart';
 import 'package:async_redux_todo/business/todo/todo_actions.dart';
+import 'package:async_redux_todo/images.dart';
 import 'package:flutter/material.dart';
 import 'package:provider_for_redux/provider_for_redux.dart';
 
@@ -8,7 +9,7 @@ class TodoListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const posterPath = 'https://i.imgur.com/OvMZBs9.jpg';
+    //const posterPath = 'https://i.imgur.com/OvMZBs9.jpg';
     TextEditingController _searchController = TextEditingController(text: '');
     return ReduxConsumer<AppState>(
       builder: (context, store, state, dispatch, child) => Stack(
@@ -49,10 +50,11 @@ class TodoListWidget extends StatelessWidget {
                       clipBehavior: Clip.hardEdge,
                       child: Row(
                         children: [
-                          Image.network(
-                            posterPath,
-                            width: 95,
-                          ),
+                          const Image(image: AppImages.todoImage, width: 95,),
+                          // Image.network(
+                          //   posterPath,
+                          //   width: 95,
+                          // ),
                           const SizedBox(
                             width: 12,
                           ),

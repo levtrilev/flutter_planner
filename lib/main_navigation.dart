@@ -3,6 +3,8 @@ import 'package:async_redux_todo/client/main_screen/main_screen_widget.dart';
 import 'package:async_redux_todo/client/todo/todo_details_widget.dart';
 import 'package:flutter/material.dart';
 
+import 'client/auth/auth_widget.dart';
+
 abstract class MainNavigationRouteNames {
   static const auth = 'auth';
   static const mainScreen = '/';
@@ -16,9 +18,12 @@ abstract class MainNavigationRouteNames {
 }
 
 class MainNavigation {
-  String initialRoute(context, bool isAuth) => MainNavigationRouteNames.mainScreen;
+  String initialRoute(context, bool isAuth) => isAuth
+        ? MainNavigationRouteNames.mainScreen
+      : MainNavigationRouteNames.auth;
 
   final routs = <String, Widget Function(BuildContext)>{
+    MainNavigationRouteNames.auth: (context) => const AuthWidget(),
     MainNavigationRouteNames.counter: (context) => const CounterWidget(),
 
     MainNavigationRouteNames.mainScreen: (context) => const MainScreenWidget(),

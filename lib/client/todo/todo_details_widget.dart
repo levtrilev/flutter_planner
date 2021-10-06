@@ -130,6 +130,7 @@ class TodoDetailsWidget extends StatelessWidget {
                     onPressed: () => dispatch(SaveTodoDetailsAction(
                         changedTodoItem: state.todoState.todoItem.copy(
                       title: titleController.text,
+                      userId: state.appStatus.userId,
                       priority: int.tryParse(priorityController.text),
                     ))),
                     heroTag: null,
