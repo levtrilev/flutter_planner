@@ -38,7 +38,8 @@ dependencies:
   async_redux: ^13.0.4
   provider_for_redux: ^4.0.0
   json_annotation: ^4.0.1
-  
+  flutter_secure_storage: ^4.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

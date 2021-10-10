@@ -1,5 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:async_redux_todo/business/app_state.dart';
+import 'package:async_redux_todo/business/todo/todo_actions.dart';
 import 'package:async_redux_todo/client/todo/todo_list_widget.dart';
 import 'package:async_redux_todo/main_navigation.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,9 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
       if (state.appStatus.userToken == '') {
         NavigateAction.pushNamed(MainNavigationRouteNames.auth);
       }
-      //dispatch(InitialGetTodoListAction());
+      if (state.appStatus.appStateIsInitializing) {
+        dispatch(InitialGetTodoListAction());
+      }
       return Scaffold(
         appBar: AppBar(
           title: const Text(

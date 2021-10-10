@@ -1,9 +1,9 @@
-// AuthenticateAction
 import 'package:async_redux/async_redux.dart';
 import 'package:async_redux_todo/business/app_state.dart';
 import 'package:async_redux_todo/business/todo/todo_actions.dart';
 import 'package:async_redux_todo/dao/api/api_client.dart';
 import 'package:async_redux_todo/dao/entity/user.dart';
+import 'package:async_redux_todo/dao/session_data_provider.dart';
 
 final _apiClient = ApiClient();
 
@@ -22,8 +22,12 @@ class AuthenticateAction extends ReduxAction<AppState> {
     final userData = await _apiClient.makeUserToken(username, password);
     token = userData['token'] ?? '';
     if (token == '') return null;
-    users = await _apiClient.getUserByEmail(userData['email'] ?? '', token) ?? <User>[];
+    users = await _apiClient.getUserByEmail(userData['email'] ?? '', token) ??
+        <User>[];
     final userId = users.length == 1 ? users[0].id : 0;
+    final sessionDataProvider = SessionDataProvider();
+    sessionDataProvider.setToken(token);
+    sessionDataProvider.setUserId(userId);
     final newstate = state.copy(
         appStatus: state.appStatus.copy(
       userToken: token,

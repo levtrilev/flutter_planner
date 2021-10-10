@@ -32,13 +32,15 @@ class AppState {
     );
   }
 
-  static AppState initialState() => AppState(
+  static AppState initialState(String token, int userId) {
+return AppState(
         counter: 2,
         otherCounter: 3,
         message: 'other is bigger!',
         todoState: TodoState.initialState(),
-        appStatus: AppStatus.initialState(),
+        appStatus: AppStatus.initialState(token, userId),
       );
+  }
 
   @override
   bool operator ==(Object other) =>

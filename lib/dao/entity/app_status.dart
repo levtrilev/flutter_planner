@@ -25,15 +25,18 @@ class AppStatus {
       isTodoLoadInProgress: isTodoLoadInProgress ?? this.isTodoLoadInProgress,
       userToken: userToken ?? this.userToken,
       userId: userId ?? this.userId,
-      appStateIsInitializing: appStateIsInitializing ?? this.appStateIsInitializing,
+      appStateIsInitializing:
+          appStateIsInitializing ?? this.appStateIsInitializing,
     );
   }
 
-  static AppStatus initialState() => AppStatus(
-          isAuthInProgress: false,
-          isTodoLoadInProgress: false,
-          userToken: '',
-          userId: 0,
-          appStateIsInitializing: true,
-        );
+  static AppStatus initialState(String token, int userId) {
+    return AppStatus(
+      isAuthInProgress: false,
+      isTodoLoadInProgress: false,
+      userToken: token,
+      userId: userId,
+      appStateIsInitializing: true,
+    );
+  }
 }

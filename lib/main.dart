@@ -1,4 +1,5 @@
 import 'package:async_redux/async_redux.dart';
+import 'package:async_redux_todo/app_model.dart';
 import 'package:async_redux_todo/client/Theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,15 +12,29 @@ late Store<AppState> store;
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final model = AppModel();
+  await model.checkAuth();
+  await model.getUserId();
+  final app = PlannerApp(model: model);
   NavigateAction.setNavigatorKey(navigatorKey);
-  store = Store<AppState>(initialState: AppState.initialState());
-
-  runApp(const MyApp());
+  store = Store<AppState>(initialState: AppState.initialState(model.token, model.userId));
+  runApp(app);
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+// void main() async {
+//   NavigateAction.setNavigatorKey(navigatorKey);
+//   store = Store<AppState>(initialState: AppState.initialState());
+//   runApp(const MyApp());
+// }
+
+class PlannerApp extends StatelessWidget {
+  final AppModel model;
   static final mainNavigation = MainNavigation();
+  const PlannerApp({
+    Key? key,
+    required this.model,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +55,7 @@ class MyApp extends StatelessWidget {
           //home: CounterWidget(),
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          initialRoute: mainNavigation.initialRoute(context, false),
+          initialRoute: mainNavigation.initialRoute(context, model.isAuth),
           routes: mainNavigation.routs,
           onGenerateRoute: (RouteSettings settings) {
             return MaterialPageRoute<void>(builder: (context) {
